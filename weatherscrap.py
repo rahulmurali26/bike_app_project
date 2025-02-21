@@ -1,6 +1,7 @@
 import requests
+import csv
 
-API_KEY = 'yourapiKey'
+API_KEY = 'apikey'  # Replace with your actual API key
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 def get_weather(city):
@@ -22,7 +23,23 @@ def get_weather(city):
     else:
         return {"Error": f"API error: {response.status_code}, {response.text}"}
 
+def save_to_csv(data, filename="weather_data.csv"):
+    # Define the CSV file headers
+    headers = ["City", "Temperature", "Weather", "Humidity", "Wind Speed"]
+    
+    # Write data to CSV file
+    with open(filename, mode='w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=headers)
+        writer.writeheader()
+        writer.writerow(data)
+
 if __name__ == "__main__":
     city = input("Enter city name: ")
     weather_data = get_weather(city)
-    print(weather_data)
+    
+    if "Error" not in weather_data:
+        print(weather_data)
+        save_to_csv(weather_data)
+        print(f"Weather data saved to weather_data.csv")
+    else:
+        print(weather_data["Error"])
