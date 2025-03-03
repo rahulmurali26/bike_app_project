@@ -9,6 +9,6 @@ response = requests.get(STATIONS_URI, params={"apiKey": API_KEY, "contract": CIT
 
 if response.status_code == 200:  #Check if request was successful
     data = json.loads(response.text)
-    print(json.dumps(data, indent=4))
+    print(json.dumps(data[0], indent=4))
 else:
     print("Error:", response.status_code)  # Handle errors

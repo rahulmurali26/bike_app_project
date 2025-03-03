@@ -1,0 +1,192 @@
+/* Reset styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Body Styling - Dark Theme */
+html, body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff; /* Light text */
+}
+
+/* Ensuring the content takes full height */
+body {
+    display: flex;
+    flex-direction: column; /* Sidebar and main content side by side */
+    min-height: 100vh; /* Full height */
+}
+
+/* Sidebar */
+.sidebar {
+    width: 18%;
+    color: #1abc9c;
+    padding: 20px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-right: 2px solid #1abc9c;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+/* Sidebar Text */
+.sidebar h2 {
+    font-size: 25px;
+    margin-bottom: 15px;
+
+    text-align: center;
+    border-bottom: 2px solid #1abc9c;
+    padding-bottom: 10px;
+    width: 100%;
+}
+
+.weather-info {
+    font-size: 15px;
+    text-align: center;
+    color: white;
+    background-color: #1abc9c;
+    padding: 15px;
+    border-radius: 10px;
+    width: 90%;
+}
+
+/* Main Container */
+.main-container {
+    flex: 1; /* Ensures it takes up full space */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    width: 82%;
+    margin-left: 18%;
+}
+
+/* Header */
+header {
+    width: 100%;
+    background-color: #1abc9c;
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+}
+
+/* Search Bar */
+.search-bar {
+    margin: 20px 0;
+    width: 80%;
+    text-align: center;
+}
+
+.search-bar input {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+    border: 2px solid #1abc9c;
+    border-radius: 8px;
+    color: #1abc9c;
+}
+
+/* Map and Station Info */
+.map-container {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1; /* Pushes content down */
+}
+
+/* Map */
+.map {
+    width: 100%;
+    height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #1abc9c;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #1abc9c;
+}
+
+/* Station Info Panel */
+.station-info {
+    width: 100%;
+
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.station-info h3 {
+    text-align: center;
+    font-size: 25px;
+    color: #1abc9c;
+    margin-bottom: 15px;
+}
+
+/* Table Styling */
+.station-info table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.station-info th, .station-info td {
+    padding: 12px;
+    border: 1px solid #1abc9c;
+    text-align: center;
+}
+
+.station-info th {
+    background-color: #1abc9c;
+    color: white;
+    font-size: 15px;
+}
+
+.station-info td {
+    color: #1abc9c;
+}
+
+/* Footer (Now at the bottom of the site, not fixed) */
+footer {
+    width: 100%;
+    text-align: right;
+    padding: 15px;
+    color: #1abc9c; 
+    font-size: 16px;
+    opacity: 0.35;
+    margin-top: 40px; /* Space before footer */
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    body {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        height: auto;
+        text-align: center;
+        padding: 15px;
+        position: relative;
+    }
+
+    .main-container {
+        width: 100%;
+        padding: 15px;
+        margin-left: 0;
+    }
+
+    .map {
+        height: 500px;
+    }
+}
