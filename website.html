@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bike Availability Map</title>
+    <link rel="stylesheet" href="website.css">
+    <!-- Load Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBkw9xofx1YnhupCSZAztThgwhK6CkbBCM&callback=initMap" async defer></script>
+    <!-- Load PapaParse for CSV parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+
+<body>
+    <!-- Map Container -->
+    <div id="map"></div>
+    
+    <!-- Search Bar -->
+    <div class="search-container">
+        <input type="text" id="search-bar" placeholder="Search for bike stations...">
+    </div>
+    
+    <!-- Sidebar Toggle Button -->
+    <button class="toggle-sidebar" id="toggle-sidebar">
+        <i class="fas fa-bars">O</i>
+    </button>
+    
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-content">
+            <button class="close-sidebar" id="close-sidebar">
+                <i class="fas fa-times">X</i>
+            </button>
+            
+            <!-- Selected Station Info Section -->
+            <div class="sidebar-section station-info" id="station-info">
+                <h2>Selected Station</h2>
+                <div class="station-header">
+                    <div class="station-icon">
+                        <i class="fas fa-bicycle"></i>
+                    </div>
+                    <div class="station-name" id="station-name">No Station Selected</div>
+                </div>
+                
+                <div class="station-stats">
+                    <div class="stat-box">
+                        <div class="stat-value" id="bikes-available">0</div>
+                        <div class="stat-label">Bikes Available</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="docks-available">0</div>
+                        <div class="stat-label">Docks Available</div>
+                    </div>
+                </div>
+                
+                <div class="station-details">
+                    <div class="detail-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="station-address">No address available</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span id="station-hours">24/7 Operation</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="station-status">Station Status: Operational</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-history"></i>
+                        <span id="last-updated">Last updated: Just now</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Weather Section -->
+            <div class="sidebar-section">
+                <h2>Current Weather</h2>
+                <div class="weather-container">
+                    <div class="weather-header">
+                        <div class="weather-temp">22°</div>
+                        <div class="weather-icon"><i class="fas fa-sun"></i></div>
+                    </div>
+                    <div class="weather-details">
+                        <div class="weather-detail">
+                            <i class="fas fa-wind"></i>
+                            <span>5 km/h</span>
+                        </div>
+                        <div class="weather-detail">
+                            <i class="fas fa-tint"></i>
+                            <span>45%</span>
+                        </div>
+                        <div class="weather-detail">
+                            <i class="fas fa-temperature-low"></i>
+                            <span>18° / 25°</span>
+                        </div>
+                        <div class="weather-detail">
+                            <i class="fas fa-cloud-sun"></i>
+                            <span>Sunny</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bike Availability Section -->
+            <div class="sidebar-section">
+                <h2>Bike Availability</h2>
+                <div class="graph-container">
+                    <div class="graph-bar">
+                        <div class="bar" style="height: 75%;" data-percent="75%"></div>
+                        <div class="bar" style="height: 45%;" data-percent="45%"></div>
+                        <div class="bar" style="height: 90%;" data-percent="90%"></div>
+                        <div class="bar" style="height: 60%;" data-percent="60%"></div>
+                        <div class="bar" style="height: 30%;" data-percent="30%"></div>
+                        <div class="bar" style="height: 70%;" data-percent="70%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let map;
+
+        // Initialize the map
+        function initMap() {
+            // Set the initial center to Dublin's coordinates
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: { lat: 53.3498, lng: -6.2603 }, // Dublin coordinates
+                zoom: 13
+            });
+
+            // Load and plot bike data from CSV
+            loadBikeData();
+        }
+
+        // Load bike data from CSV
+        function loadBikeData() {
+            fetch('bike_data.csv')
+                .then(response => response.text())
+                .then(csvText => {
+                    // Parse the CSV data
+                    Papa.parse(csvText, {
+                        header: true,
+                        dynamicTyping: true,
+                        complete: function(results) {
+                            console.log("Parsed CSV Data:", results.data); // Debugging: Log parsed data
+                            plotMarkers(results.data); // Plot markers on the map
+                        },
+                        error: function(error) {
+                            console.error("Error parsing CSV:", error);
+                        }
+                    });
+                })
+                .catch(error => console.error("Error loading CSV:", error));
+        }
+
+        // Plot markers on the map
+        function plotMarkers(data) {
+            data.forEach(row => {
+                // Ensure the latitude and longitude are correctly accessed from the CSV
+                let lat = parseFloat(row.latitude);
+                let lng = parseFloat(row.longitude);
+                let stationName = row.name || "Bike Station"; // Use the station name from the CSV
+
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    console.log("Adding marker at:", lat, lng, "for station:", stationName); // Debugging: Log marker details
+                    new google.maps.Marker({
+                        position: { lat, lng },
+                        map: map,
+                        title: stationName
+                    });
+                } else {
+                    console.error("Invalid lat/lng for station:", stationName, "Lat:", lat, "Lng:", lng); // Debugging: Log invalid data
+                }
+            });
+        }
+
+        // Sidebar toggle functions
+        document.addEventListener("DOMContentLoaded", () => {
+            document.getElementById("toggle-sidebar").addEventListener("click", openSidebar);
+            document.getElementById("close-sidebar").addEventListener("click", closeSidebar);
+        });
+
+        function openSidebar() {
+            document.getElementById("sidebar").style.width = "280px";
+            document.getElementById("map").style.marginRight = "280px";
+        }
+        
+        function closeSidebar() {
+            document.getElementById("sidebar").style.width = "0";
+            document.getElementById("map").style.marginRight = "0";
+        }
+    </script>
+</body>
+</html>

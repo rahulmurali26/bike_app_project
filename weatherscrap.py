@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 import os
 
-API_KEY = "your-api-key"  # Replace with your actual API key
+API_KEY = "72e7bbdfdba07b96a4290bf1506742af"  # Replace with your actual API key
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 CSV_FILE = "weather_data.csv"
 INTERVAL = 5  # Time interval in seconds (e.g., 60s = 1 min)
