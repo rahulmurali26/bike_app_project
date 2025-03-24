@@ -1,4 +1,112 @@
 
+
+async function getTopBikeStations() {
+    const response = await fetch('../data/output.csv');
+    const csvText = await response.text();
+    const rows = csvText.split('\n').slice(1);
+
+    const stations = [];
+
+    rows.forEach(row => {
+        if (row.trim() !== '') {
+            const [
+                number, contract_name, name, address, banking, bonus, bike_stands,
+                available_bike_stands, available_bikes, status, last_update, latitude, longitude
+            ] = row.split(',');
+
+            stations.push({
+                name,
+                address,
+                available_bikes: parseInt(available_bikes, 10),
+                available_bike_stands: parseInt(available_bike_stands, 10),
+                total_stands: parseInt(bike_stands, 10),
+                latitude: parseFloat(latitude),
+                longitude: parseFloat(longitude),
+                status
+            });
+        }
+    });
+
+    // Sort and get top 10 stations
+    stations.sort((a, b) => b.available_bikes - a.available_bikes);
+    const topStations = stations.slice(0, 10);
+
+    displayStations(topStations);
+    renderChart(topStations);
+}
+
+function displayStations(stations) {
+    const stationList = document.getElementById('station-list');
+    stationList.innerHTML = '';
+
+    stations.forEach(station => {
+        const div = document.createElement('div');
+        div.classList.add('station-info');
+        div.innerHTML = `
+            <h3>${station.name}</h3>
+            <p><strong>Address:</strong> ${station.address}</p>
+            <p><strong>Available Bikes:</strong> ${station.available_bikes}</p>
+            <p><strong>Open Stands:</strong> ${station.available_bike_stands}</p>
+            <p><strong>Status:</strong> ${station.status}</p>
+        `;
+        stationList.appendChild(div);
+    });
+}
+
+function renderChart(stations) {
+    const ctx = document.getElementById('bikesChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: stations.map(s => s.name),
+            datasets: [
+                {
+                    label: 'Available Bikes',
+                    data: stations.map(s => s.available_bikes),
+                    backgroundColor: '#4CAF50'
+                },
+                {
+                    label: 'Available Bike Stands',
+                    data: stations.map(s => s.available_bike_stands),
+                    backgroundColor: '#FF9800'
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+                title: {
+                    display: true,
+                    text: 'Top 10 Stations by Availability'
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true
+                },
+                x: {
+                    ticks: {
+                        callback: function(value, index, tickValues) {
+                            const label = this.getLabelForValue(value);
+                            return label.length > 10 ? label.slice(0,10) + '...' : label;
+                        },
+                        maxRotation: 45,
+                        minRotation: 45
+                    }
+                }
+            }
+        }
+    });
+}
+
+window.addEventListener('load', getTopBikeStations);
+
+
+
 // Fetch CSV data and display top bike stations
 async function getTopBikeStations() {
     const response = await fetch('../data/output.csv');
