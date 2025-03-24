@@ -12,122 +12,14 @@
     <div id="map">
         <div id="current-time" class="time-display"></div>
         <h2>Map will go here</h2></div>
-
+    <div id="station-list">
+        <!-- Top stations will appear here -->
+    </div>
     <!-- Google Maps API -->
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
 
-    <script>
-        // Function to update the current time
-        function updateCurrentTime() {
-            const timeDisplay = document.getElementById("current-time");
-            const now = new Date();
-
-            // Format time as HH:MM:SS
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-
-            timeDisplay.textContent = `${hours}:${minutes}:${seconds}`;
-
-            // Update every second
-            setTimeout(updateCurrentTime, 1000);
-        }
-
-        // Start the clock when the page loads
-        window.addEventListener('load', updateCurrentTime);
-        // Initialize and add the map
-
-        function initMap() {
-            // Set default location to Dublin, Ireland
-            const dublin = { lat: 53.3498, lng: -6.2603 };
-
-            // Create the map, centered at Dublin
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 13,
-                center: dublin,
-            });
-
-            // Fetch the CSV file with coordinates
-            fetch('./unique_coordinates.csv')
-                .then(response => response.text())
-                .then(data => {
-                    // Parse the CSV data
-                    const rows = data.split('\n');
-                    // Skip the header row
-                    rows.shift();
-
-                    // Create markers for each coordinate
-                    rows.forEach(row => {
-                        if (row.trim() !== '') {
-                            const [longitude, latitude] = row.split(',');
-
-                            // Create marker position
-                            const position = {
-                                lat: parseFloat(latitude),
-                                lng: parseFloat(longitude)
-                            };
-
-                            // Add marker to the map
-                            const marker = new google.maps.Marker({
-                                position: position,
-                                map: map,
-                                title: `Bike Station at ${latitude}, ${longitude}`
-                            });
-
-                            // Optional: Add click listener to each marker
-                            marker.addListener("click", () => {
-                                // Update sidebar with station information when clicked
-                                document.getElementById("station-name").textContent = `Bike Station`;
-                                document.getElementById("station-address").textContent =
-                                    `Location: ${latitude}, ${longitude}`;
-                            });
-                        }
-                    });
-                    const zoomControlDiv = document.createElement("div");
-
-                    // Create a button for zooming in
-                    const zoomInButton = document.createElement("button");
-                    zoomInButton.innerHTML = "+";
-                    zoomInButton.style.cssText = "width: 30px; height: 30px; font-size: 20px; margin: 5px;";
-                    zoomInButton.onclick = function() {
-                        map.setZoom(map.getZoom() + 1);
-                    };
-
-                    // Create a button for zooming out
-                    const zoomOutButton = document.createElement("button");
-                    zoomOutButton.innerHTML = "-";
-                    zoomOutButton.style.cssText = "width: 30px; height: 30px; font-size: 20px; margin: 5px;";
-                    zoomOutButton.onclick = function() {
-                        map.setZoom(map.getZoom() - 1);
-                    };
-
-                    // Create a button to reset to default view
-                    const resetButton = document.createElement("button");
-                    resetButton.innerHTML = "Reset";
-                    resetButton.style.cssText = "margin: 5px; padding: 5px;";
-                    resetButton.onclick = function() {
-                        map.setCenter(dublin);
-                        map.setZoom(14);
-                    };
-
-                    // Add buttons to control div
-                    zoomControlDiv.appendChild(zoomInButton);
-                    zoomControlDiv.appendChild(zoomOutButton);
-                    zoomControlDiv.appendChild(resetButton);
-
-                    // Position the control div in the top right corner of the map
-                    zoomControlDiv.index = 1;
-                    zoomControlDiv.style.padding = "10px";
-                    map.controls[google.maps.ControlPosition.TOP_RIGHT].push(zoomControlDiv);
-
-
-                })
-                .catch(error => {
-                    console.error('Error loading coordinates:', error);
-                });
-        }
-    </script>
-    
+    <!-- Your external JavaScript File -->
+    <script src="../static/js/main.js"></script>
     <!-- Search Bar -->
     <div class="search-container">
         <input type="text" id="search-bar" placeholder="Search for bike stations...">
