@@ -4,7 +4,7 @@ import requests
 import pandas as pd
 
 # Fetch data from API
-r = requests.get(dbinfo.STATION_URI, params={"7f53d1d974a374e40dfa9c54024728b0e13e8ce5": dbinfo.JCKEY, "contract": dbinfo.NAME})
+r = requests.get(dbinfo.STATION_URI, params={"apiKey": dbinfo.JCKEY, "contract": dbinfo.NAME})
 
 if r.status_code != 200:
     print(f"API request failed with status code {r.status_code}: {r.text}")
@@ -16,6 +16,11 @@ data = json.loads(r.text)
 if not data:
     print("No data received from API.")
     exit()
+
+# Save the JSON data to a file
+with open("bike_data.json", "w") as json_file:
+    json.dump(data, json_file, indent=4)
+    print("JSON data saved to bike_data.json")
 
 # Convert JSON data into DataFrame
 df = pd.DataFrame(data)
