@@ -33,7 +33,7 @@ function initMap() {
     getStations();
 }
 
-// Getstation Functions to Fetch our Stations data from the API request call
+// getstation Functions to Fetch our Stations data from the API request call
 // Included debugging logs which helped in debugging
 function getStations() {
     fetch("/stations")
@@ -53,6 +53,7 @@ function getStations() {
 }
 
 // addMarkers Function connects to the JSON file of bike_stations to acquire data
+// Work on this function to add more on the information window
 
 function addMarkers(stations) {
     console.log("Adding markers for", stations.length, "stations");
@@ -76,6 +77,19 @@ function addMarkers(stations) {
                 available_bikes: station.available_bikes,
                 available_bike_stands: station.available_bike_stands,
                 bike_stands: station.bike_stands,
+
+            });
+
+            // Convert the timestamp to a readable 24-hour format
+            const lastUpdated = new Date(station.last_update);
+            const formattedUpdate = lastUpdated.toLocaleString('en-GB', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false // 24-hour format
+
             });
 
             // Add info window for each marker
@@ -87,6 +101,7 @@ function addMarkers(stations) {
                         <p><strong>Bikes Available:</strong> ${station.available_bikes || "N/A"}</p>
                         <p><strong>Bike Stands</strong>${station.bike_stands || "N/A"}</p>
                         <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
+                        <p><strong> Last Updated: </strong> ${formattedUpdate} </p>
                     </div>
                 `
             });
