@@ -6,7 +6,7 @@ API_KEY = '72e7bbdfdba07b96a4290bf1506742af'  # OpenWeather API from Rahul
 BASE_URL = "https://api.openweathermap.org/data/2.5/weather"
 
 
-def get_weather():  # Set default city to Dublin
+def get_weather_data():  # Renamed function from get_weather() to get_weather_data()
     params = {"id": "2964574", "appid": API_KEY, "units": "metric"}
 
     response = requests.get(BASE_URL, params=params)
@@ -51,7 +51,7 @@ if __name__ == "__main__":
     city = "Dublin"
     print(f"Getting weather data for {city}...")
 
-    weather_data = get_weather()
+    weather_data = get_weather_data()  # Updated to use the renamed function
 
     if "Error" not in weather_data:
         print(weather_data)

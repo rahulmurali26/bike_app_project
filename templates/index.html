@@ -1,28 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bike Availability Map</title>
+    <title>{{ title }}</title>
+    <!-- CSS Style sheet external -->
     <link rel="stylesheet" href="../static/css/style2.css">
 </head>
 
 <body>
     <!-- Map Container -->
-    <div id="map">
-        <div id="current-time" class="time-display"></div>
-        <h2>Map will go here</h2></div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div id="map"></div>
     <div id="station-list"></div>
     <canvas id="bikesChart"></canvas>
 
-
-    <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
-
-    <!-- Your external JavaScript File -->
-    <script src="../static/js/main.js"></script>
     <!-- Search Bar -->
     <div class="search-container">
         <input type="text" id="search-bar" placeholder="Search for bike stations...">
@@ -80,7 +72,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Weather Section with random info we can add proper stuff later -->
             <div class="sidebar-section">
                 <h2>Current Weather</h2>
@@ -109,7 +101,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Bike Availability Section  with random info graph we can change later-->
             <div class="sidebar-section">
                 <h2>Bike Availability</h2>
@@ -145,5 +137,12 @@
             document.getElementById("map").style.marginRight = "0";
         }
     </script>
+
+        <!-- Your external JavaScript File -->
+        <script src="../static/js/main.js"></script>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
+
 </body>
 </html>
