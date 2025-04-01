@@ -41,7 +41,7 @@ h2 {
 }
 
 .sidebar {
-    position: fixed;
+    position: fixed; /* Change from relative to fixed */
     height: 100%;
     width: 0;
     top: 0;
@@ -50,10 +50,9 @@ h2 {
     backdrop-filter: blur(5px);
     overflow-x: hidden;
     transition: 0.3s;
-    z-index: 3;
+    z-index: 1000; /* Increase z-index to make sure it's on top */
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
 }
-
 .sidebar-content {
     padding: 25px 20px;
     width: 280px;

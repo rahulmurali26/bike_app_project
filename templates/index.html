@@ -119,23 +119,29 @@
         </div>
     </div>
 
+    <!-- This is the scrip for the side bar, this controls the opening and closing of the the side button -->
     <script>
+        console.log("Setting up sidebar event listeners");
         document.addEventListener("DOMContentLoaded", () => {
             // Set up sidebar toggle listeners
-            document.getElementById("toggle-sidebar").addEventListener("click", openSidebar);
-            document.getElementById("close-sidebar").addEventListener("click", closeSidebar);
+            const toggleBtn = document.getElementById("toggle-sidebar");
+            const closeBtn = document.getElementById("close-sidebar");
+
+            console.log("Toggle button found:", toggleBtn);
+            console.log("Close button found:", closeBtn);
+
+            toggleBtn.addEventListener("click", () => {
+                console.log("Toggle button clicked!");
+                document.getElementById("sidebar").style.width = "280px";
+                document.getElementById("map").style.marginRight = "280px";
+            });
+
+            closeBtn.addEventListener("click", () => {
+                console.log("Close button clicked!");
+                document.getElementById("sidebar").style.width = "0";
+                document.getElementById("map").style.marginRight = "0";
+            });
         });
-        
-        // Sidebar toggle functions
-        function openSidebar() {
-            document.getElementById("sidebar").style.width = "280px";
-            document.getElementById("map").style.marginRight = "280px";
-        }
-        
-        function closeSidebar() {
-            document.getElementById("sidebar").style.width = "0";
-            document.getElementById("map").style.marginRight = "0";
-        }
     </script>
 
         <!-- Your external JavaScript File -->

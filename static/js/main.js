@@ -99,7 +99,7 @@ function addMarkers(stations) {
                         <h3>${station.name || station.address}</h3>
                         <p><strong>Address:</strong> ${station.address || "N/A"}</p>
                         <p><strong>Bikes Available:</strong> ${station.available_bikes || "N/A"}</p>
-                        <p><strong>Bike Stands</strong>${station.bike_stands || "N/A"}</p>
+                        <p><strong>Bike Stands:</strong>${station.bike_stands || "N/A"}</p>
                         <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
                         <p><strong> Last Updated: </strong> ${formattedUpdate} </p>
                     </div>
@@ -119,3 +119,4 @@ function addMarkers(stations) {
     }
 
 }
+
