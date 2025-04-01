@@ -10,6 +10,24 @@ body {
     overflow: hidden;
 }
 
+/* This is the Header portion containing code for display header bar, logo and weather information */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: first baseline;
+    padding: 1rem;
+    background-color: #29acf2;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0;
+    font-family: 'Arial',sans-serif;
+}
+
+.logo {
+    height: 40px;
+}
+
+
+/* Style sheet for map component */
 #map {
     height: 100vh;
     width: 100%;

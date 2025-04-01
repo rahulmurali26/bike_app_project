@@ -1,6 +1,7 @@
 
 from flask import Flask, render_template
 # External Scripts required to get API Request Data
+# Here we are opting for server side data fetching
 import jcddecaux
 import weatherscrap
 
@@ -20,15 +21,18 @@ def main():
 
     return render_template("index.html", title='Homepage', bike_data=bike_data, weather_data=weather_data)
 
-# Show all the stations in json
+# Route to show all the stations in json
 @app.route("/stations")
 def stations():
     bike_data = jcddecaux.get_bike_data()
     return bike_data
 
-# Route for the "about" page
-# This is just a place holder for now, can mark up an about page or secondary page later (see lecture 5)
-# def about():
+
+# Route to access weather data
+@app.route("/weather")
+def weather():
+    weather_data = weatherscrap.get_weather_data()
+    return weather_data
 
 
 if __name__ == '__main__':

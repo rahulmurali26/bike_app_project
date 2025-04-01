@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,148 +6,175 @@
     <title>{{ title }}</title>
     <!-- CSS Style sheet external -->
     <link rel="stylesheet" href="../static/css/style2.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 
 <body>
-    <!-- Map Container -->
-    <div id="map"></div>
-    <div id="station-list"></div>
-    <canvas id="bikesChart"></canvas>
+<!-- Header Container (contains Logo and Weather Information (connected to Openweather API) -->
+<div class="header">
+    <h1> UCD Bikes App </h1>
+</div>
+<!-- Map Container -->
+<div id="map"></div>
+<div id="station-list"></div>
+<canvas id="bikesChart"></canvas>
 
-    <!-- Search Bar -->
-    <div class="search-container">
-        <input type="text" id="search-bar" placeholder="Search for bike stations...">
-    </div>
-    
-    <!-- Sidebar Toggle Button -->
-    <button class="toggle-sidebar" id="toggle-sidebar">
-        <i class="fas fa-bars">O</i>
-    </button>
-    
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
-        <div class="sidebar-content">
-            <button class="close-sidebar" id="close-sidebar">
-                <i class="fas fa-times">X</i>
-            </button>
-            
-            <!-- Selected Station Info Section we can add to later-->
-            <div class="sidebar-section station-info" id="station-info">
-                <h2>Selected Station</h2>
-                <div class="station-header">
-                    <div class="station-icon">
-                        <i class="fas fa-bicycle"></i>
-                    </div>
-                    <div class="station-name" id="station-name">No Station Selected</div>
+<!-- Search Bar  ( I have commented out for now for imaging purposes, can add to the header bar later on and add in
+th functionality to search through
+<div class="search-container">
+    <input type="text" id="search-bar" placeholder="Search for bike stations...">
+</div>
+
+-->
+
+<!-- Sidebar Toggle Button -->
+<button class="toggle-sidebar" id="toggle-sidebar">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-content">
+        <button class="close-sidebar" id="close-sidebar">
+            <i class="fas fa-times"></i>
+        </button>
+
+        <!-- Selected Station Info Section we can add to later-->
+        <div class="sidebar-section station-info" id="station-info">
+            <h2>Selected Station</h2>
+            <div class="station-header">
+                <div class="station-icon">
+                    <i class="fas fa-bicycle"></i>
                 </div>
-                
-                <div class="station-stats">
-                    <div class="stat-box">
-                        <div class="stat-value" id="bikes-available">0</div>
-                        <div class="stat-label">Bikes Available</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="docks-available">0</div>
-                        <div class="stat-label">Docks Available</div>
+                <div class="station-name" id="station-name">No Station Selected</div>
+            </div>
+
+            <div class="station-stats">
+                <div class="stat-box">
+                    <div class="stat-value" id="bikes-available">0</div>
+                    <div class="stat-label">Bikes Available</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="docks-available">0</div>
+                    <div class="stat-label">Docks Available</div>
+                </div>
+            </div>
+
+            <div class="station-details">
+                <div class="detail-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="station-address">No address available</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-clock"></i>
+                    <span id="station-hours">24/7 Operation</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-info-circle"></i>
+                    <span id="station-status">Station Status: Operational</span>
+                </div>
+                <div class="detail-item">
+                    <i class="fas fa-history"></i>
+                    <span id="last-updated">Last updated: Just now</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Weather Section - Now with dynamic data -->
+        <div class="sidebar-section">
+            <h2>Current Weather</h2>
+            <div class="weather-container">
+                <div class="weather-header">
+                    <div class="weather-temp" id="weather-temp">--°</div>
+                    <div class="weather-icon" id="weather-icon">
+                        <!-- Weather icon will be inserted here dynamically -->
                     </div>
                 </div>
-                
-                <div class="station-details">
-                    <div class="detail-item">
+                <div class="weather-details">
+                    <div class="weather-detail">
+                        <i class="fas fa-wind"></i>
+                        <span id="weather-wind">-- km/h</span>
+                    </div>
+                    <div class="weather-detail">
+                        <i class="fas fa-tint"></i>
+                        <span id="weather-humidity">--%</span>
+                    </div>
+                    <div class="weather-detail">
+                        <i class="fas fa-temperature-low"></i>
+                        <span id="weather-temp-range">--° / --°</span>
+                    </div>
+                    <div class="weather-detail">
                         <i class="fas fa-map-marker-alt"></i>
-                        <span id="station-address">No address available</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-clock"></i>
-                        <span id="station-hours">24/7 Operation</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-info-circle"></i>
-                        <span id="station-status">Station Status: Operational</span>
-                    </div>
-                    <div class="detail-item">
-                        <i class="fas fa-history"></i>
-                        <span id="last-updated">Last updated: Just now</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Weather Section with random info we can add proper stuff later -->
-            <div class="sidebar-section">
-                <h2>Current Weather</h2>
-                <div class="weather-container">
-                    <div class="weather-header">
-                        <div class="weather-temp">22°</div>
-                        <div class="weather-icon"><i class="fas fa-sun"></i></div>
-                    </div>
-                    <div class="weather-details">
-                        <div class="weather-detail">
-                            <i class="fas fa-wind"></i>
-                            <span>5 km/h</span>
-                        </div>
-                        <div class="weather-detail">
-                            <i class="fas fa-tint"></i>
-                            <span>45%</span>
-                        </div>
-                        <div class="weather-detail">
-                            <i class="fas fa-temperature-low"></i>
-                            <span>18° / 25°</span>
-                        </div>
-                        <div class="weather-detail">
-                            <i class="fas fa-cloud-sun"></i>
-                            <span>Sunny</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Bike Availability Section  with random info graph we can change later-->
-            <div class="sidebar-section">
-                <h2>Bike Availability</h2>
-                <div class="graph-container">
-                    <div class="graph-bar">
-                        <div class="bar" style="height: 75%;" data-percent="75%"></div>
-                        <div class="bar" style="height: 45%;" data-percent="45%"></div>
-                        <div class="bar" style="height: 90%;" data-percent="90%"></div>
-                        <div class="bar" style="height: 60%;" data-percent="60%"></div>
-                        <div class="bar" style="height: 30%;" data-percent="30%"></div>
-                        <div class="bar" style="height: 70%;" data-percent="70%"></div>
+                        <span id="weather-location">--</span>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Bike Availability Section  with random info graph we can change later-->
+        <div class="sidebar-section">
+            <h2>Bike Availability</h2>
+            <div class="graph-container">
+                <div class="graph-bar">
+                    <div class="bar" style="height: 75%;" data-percent="75%"></div>
+                    <div class="bar" style="height: 45%;" data-percent="45%"></div>
+                    <div class="bar" style="height: 90%;" data-percent="90%"></div>
+                    <div class="bar" style="height: 60%;" data-percent="60%"></div>
+                    <div class="bar" style="height: 30%;" data-percent="30%"></div>
+                    <div class="bar" style="height: 70%;" data-percent="70%"></div>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- This is the scrip for the side bar, this controls the opening and closing of the the side button -->
-    <script>
-        console.log("Setting up sidebar event listeners");
-        document.addEventListener("DOMContentLoaded", () => {
-            // Set up sidebar toggle listeners
-            const toggleBtn = document.getElementById("toggle-sidebar");
-            const closeBtn = document.getElementById("close-sidebar");
+<!-- Script to make the weather data available to JavaScript -->
+<script>
+    // This converts the Python weather_data object to a JavaScript object using Jinja's tojson filter
+    // The |safe filter prevents Jinja from escaping the JSON
+    const weatherData = {{ weather_data|tojson|safe }};
+    console.log("Weather data loaded:", weatherData);
+</script>
 
-            console.log("Toggle button found:", toggleBtn);
-            console.log("Close button found:", closeBtn);
+<!-- This is the script for the sidebar, controlling opening and closing -->
+<script>
+    console.log("Setting up sidebar event listeners");
+    document.addEventListener("DOMContentLoaded", () => {
+        // Set up sidebar toggle listeners
+        const toggleBtn = document.getElementById("toggle-sidebar");
+        const closeBtn = document.getElementById("close-sidebar");
 
-            toggleBtn.addEventListener("click", () => {
-                console.log("Toggle button clicked!");
-                document.getElementById("sidebar").style.width = "280px";
-                document.getElementById("map").style.marginRight = "280px";
-            });
+        console.log("Toggle button found:", toggleBtn);
+        console.log("Close button found:", closeBtn);
 
-            closeBtn.addEventListener("click", () => {
-                console.log("Close button clicked!");
-                document.getElementById("sidebar").style.width = "0";
-                document.getElementById("map").style.marginRight = "0";
-            });
+        toggleBtn.addEventListener("click", () => {
+            console.log("Toggle button clicked!");
+            document.getElementById("sidebar").style.width = "280px";
+            document.getElementById("map").style.marginRight = "280px";
         });
-    </script>
 
-        <!-- Your external JavaScript File -->
-        <script src="../static/js/main.js"></script>
+        closeBtn.addEventListener("click", () => {
+            console.log("Close button clicked!");
+            document.getElementById("sidebar").style.width = "0";
+            document.getElementById("map").style.marginRight = "0";
+        });
 
-    <!-- Google Maps API -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
+        // Update weather information in the sidebar
+        if (weatherData) {
+            updateWeatherUI(weatherData);
+        } else {
+            console.error("Weather data not available");
+        }
+    });
+</script>
+
+<!-- Your external JavaScript Files -->
+<script src="../static/js/weather.js"></script>
+<script src="../static/js/main.js"></script>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
 
 </body>
 </html>

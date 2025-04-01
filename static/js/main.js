@@ -52,12 +52,12 @@ function getStations() {
         });
 }
 
-// addMarkers Function connects to the JSON file of bike_stations to acquire data
-// Work on this function to add more on the information window
-
+// addMarkers Function connects to the JSON file of bike_stations to acquire data, display markers and map data to the releveant marker
+// Enhanced to update the sidebar when a station is clicked
 function addMarkers(stations) {
     console.log("Adding markers for", stations.length, "stations");
-// For loop to iterate through each station on JSON
+
+    // For loop to iterate through each station on JSON
     // Required to parse data as float or else data is unreadable as "object"
     for (const station of stations) {
         if (
@@ -77,7 +77,6 @@ function addMarkers(stations) {
                 available_bikes: station.available_bikes,
                 available_bike_stands: station.available_bike_stands,
                 bike_stands: station.bike_stands,
-
             });
 
             // Convert the timestamp to a readable 24-hour format
@@ -89,7 +88,6 @@ function addMarkers(stations) {
                 hour: '2-digit',
                 minute: '2-digit',
                 hour12: false // 24-hour format
-
             });
 
             // Add info window for each marker
@@ -101,22 +99,56 @@ function addMarkers(stations) {
                         <p><strong>Bikes Available:</strong> ${station.available_bikes || "N/A"}</p>
                         <p><strong>Bike Stands:</strong>${station.bike_stands || "N/A"}</p>
                         <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
-                        <p><strong> Last Updated: </strong> ${formattedUpdate} </p>
+                        <p><strong>Last Updated:</strong> ${formattedUpdate}</p>
                     </div>
                 `
             });
 
-            // Add click event listener to open info window
+            // Add click event listener to open info window and update sidebar
             marker.addListener("click", () => {
+                // Open the info window
                 infoWindow.open(map, marker);
-            });
 
-            // Console log required for debugging on developer console.
-            console.log("Marker added for:", marker.getTitle());
-        } else {
-            console.warn("Invalid position for station:", station);
+                // Update sidebar with station information
+                updateStationSidebar(station, formattedUpdate);
+
+                // Open the sidebar if it's closed
+                document.getElementById("sidebar").style.width = "280px";
+                document.getElementById("map").style.marginRight = "280px";
+            });
         }
     }
-
 }
 
+// New function to update the station sidebar with selected station info
+function updateStationSidebar(station, formattedUpdate) {
+    console.log("Updating sidebar with station:", station);
+
+    // Update station name
+    document.getElementById("station-name").textContent = station.name || station.address;
+
+    // Update available bikes and docks
+    document.getElementById("bikes-available").textContent = station.available_bikes || "0";
+    document.getElementById("docks-available").textContent = station.available_bike_stands || "0";
+
+    // Update station details
+    document.getElementById("station-address").textContent = station.address || "No address available";
+
+    // Update status - assuming operational if we have data
+    const statusElement = document.getElementById("station-status");
+    if (station.status === "OPEN") {
+        statusElement.textContent = "Station Status: Operational";
+        statusElement.style.color = "#4CAF50"; // Green for operational
+    } else {
+        statusElement.textContent = "Station Status: Closed";
+        statusElement.style.color = "#F44336"; // Red for closed
+    }
+
+    // Update last updated time
+    document.getElementById("last-updated").textContent = `Last updated: ${formattedUpdate}`;
+}
+
+// Uses server-injected weather_data from Flask (no fetch needed)
+document.addEventListener("DOMContentLoaded", () => {
+    console.log("DOM fully loaded and parsed");
+});
