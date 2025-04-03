@@ -41,6 +41,20 @@ function updateWeatherUI(weatherData) {
         const locationElement = document.getElementById('weather-location');
         locationElement.textContent = `${weatherData.name}, ${weatherData.weather[0].description}`;
 
+        // Update last time update
+        const lastUpdateElement = document.getElementById('weather-last-update');
+        const updateTime = new Date(weatherData.dt * 1000); // Convert Unix timestamp to JavaScript Date
+        const formattedDateTime = updateTime.toLocaleString([], {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        lastUpdateElement.textContent = `Updated: ${formattedDateTime}`;
+
+
+
         console.log("Weather UI updated successfully");
     } catch (error) {
         console.error("Error updating weather UI:", error);

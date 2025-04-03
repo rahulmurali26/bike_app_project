@@ -59,7 +59,6 @@ function addMarkers(stations) {
     console.log("Adding markers for", stations.length, "stations");
 
     // For loop to iterate through each station on JSON
-    // Required to parse data as float or else data is unreadable as "object"
     for (const station of stations) {
         if (
             station.position &&
@@ -71,8 +70,7 @@ function addMarkers(stations) {
                     lat: parseFloat(station.position.lat),
                     lng: parseFloat(station.position.lng),
                 },
-                map: map,  // This should now reference the global map variable
-                // Here we are accessing the JSON file, and categorically assigning data to variables which we will access later on
+                map: map,
                 title: station.name || station.address,
                 station_number: station.number,
                 available_bikes: station.available_bikes,
@@ -91,32 +89,39 @@ function addMarkers(stations) {
                 hour12: false // 24-hour format
             });
 
-            // Add info window for each marker
-            const infoWindow = new google.maps.InfoWindow({
-                content: `
-                    <div>
-                        <h3>${station.name || station.address}</h3>
-                        <p><strong>Address:</strong> ${station.address || "N/A"}</p>
-                        <p><strong>Bikes Available:</strong> ${station.available_bikes || "N/A"}</p>
-                        <p><strong>Bike Stands:</strong>${station.bike_stands || "N/A"}</p>
-                        <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
-                        <p><strong>Last Updated:</strong> ${formattedUpdate}</p>
-                    </div>
-                `
-            });
+            // Create the content for this specific marker
+            const contentString = `
+                <div>
+                    <h3>${station.name || station.address}</h3>
+                    <p><strong>Address:</strong> ${station.address || "N/A"}</p>
+                    <p><strong>Bikes Available:</strong> ${station.available_bikes || "N/A"}</p>
+                    <p><strong>Bike Stands:</strong> ${station.bike_stands || "N/A"}</p>
+                    <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
+                    <p><strong>Last Updated:</strong> ${formattedUpdate}</p>
+                </div>
+            `;
 
-            // Add click event listener to open info window and update sidebar
-            marker.addListener("click", () => {
-                // Open the info window
-                infoWindow.open(map, marker);
+            // Create a closure to maintain a reference to the current marker and info window
+            (function(currentMarker, currentContent, stationData, update) {
+                // Create info window for this marker
+                const infoWindow = new google.maps.InfoWindow({
+                    content: currentContent
+                });
 
-                // Update sidebar with station information
-                updateStationSidebar(station, formattedUpdate);
+                // Add click event listener to open info window
+                currentMarker.addListener("click", () => {
+                    // Close any open info windows (optional)
+                    // Close the info window
+                    infoWindow.open(map, currentMarker);
 
-                // Open the sidebar if it's closed
-                document.getElementById("sidebar").style.width = "280px";
-                document.getElementById("map").style.marginRight = "280px";
-            });
+                    // Update sidebar with station information
+                    updateStationSidebar(stationData, update);
+
+                    // Open the sidebar if it's closed
+                    document.getElementById("sidebar").style.width = "280px";
+                    document.getElementById("map").style.marginRight = "280px";
+                });
+            })(marker, contentString, station, formattedUpdate);
         }
     }
 }
@@ -146,7 +151,7 @@ function updateStationSidebar(station, formattedUpdate) {
     }
 
     // Update last updated time
-    document.getElementById("last-updated").textContent = `Last updated: ${formattedUpdate}`;
+    document.getElementById("last-updated").textContent = `Last updated:${formattedUpdate}`;
 }
 
 // Uses server-injected weather_data from Flask (no fetch needed)
