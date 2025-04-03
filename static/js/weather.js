@@ -75,3 +75,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up automatic weather refresh every 30 minutes (1800000 ms)
     setInterval(refreshWeatherData, 1800000);
 });
+
+
+

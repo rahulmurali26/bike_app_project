@@ -54,6 +54,7 @@ function getStations() {
 
 // addMarkers Function connects to the JSON file of bike_stations to acquire data, display markers and map data to the releveant marker
 // Enhanced to update the sidebar when a station is clicked
+// Extra Javascript Console Log included for debugging.
 function addMarkers(stations) {
     console.log("Adding markers for", stations.length, "stations");
 
@@ -152,3 +153,5 @@ function updateStationSidebar(station, formattedUpdate) {
 document.addEventListener("DOMContentLoaded", () => {
     console.log("DOM fully loaded and parsed");
 });
+
+

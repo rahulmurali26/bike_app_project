@@ -115,17 +115,21 @@ th functionality to search through
         <!-- Bike Availability Section  with random info graph we can change later-->
         <div class="sidebar-section">
             <h2>Bike Availability</h2>
-            <div class="graph-container">
-                <div class="graph-bar">
-                    <div class="bar" style="height: 75%;" data-percent="75%"></div>
-                    <div class="bar" style="height: 45%;" data-percent="45%"></div>
-                    <div class="bar" style="height: 90%;" data-percent="90%"></div>
-                    <div class="bar" style="height: 60%;" data-percent="60%"></div>
-                    <div class="bar" style="height: 30%;" data-percent="30%"></div>
-                    <div class="bar" style="height: 70%;" data-percent="70%"></div>
-                </div>
+            <!-- Thumbnail Image (click to enlarge) -->
+            <div class="weather-graph">
+                <img id="weather-thumb" src="{{ url_for('static', filename='images/BikeData_vs_Weatherdata.png') }}"
+                     alt="Bike vs Weather Graph"
+                     style="width: 100%; margin-top: 10px; border-radius: 8px; cursor: pointer;">
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Modal for enlarged image -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <img id="modalImage" src="" alt="Enlarged image">
     </div>
 </div>
 
@@ -166,6 +170,42 @@ th functionality to search through
         } else {
             console.error("Weather data not available");
         }
+    });
+</script>
+
+<!-- To handle enlargement of the bikesgraph -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the modal elements
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeModal = document.getElementsByClassName('close-modal')[0];
+        const weatherThumb = document.getElementById('weather-thumb');
+
+        // When the user clicks on the thumbnail, open the modal
+        weatherThumb.onclick = function() {
+            modal.style.display = "block";
+            modalImg.src = this.src;
+        }
+
+        // When the user clicks on the X, close the modal
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Also close when clicking anywhere on the modal background
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.style.display === "block") {
+                modal.style.display = "none";
+            }
+        });
     });
 </script>
 
