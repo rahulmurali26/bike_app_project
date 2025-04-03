@@ -89,7 +89,7 @@ function addMarkers(stations) {
                 hour12: false // 24-hour format
             });
 
-            // Create the content for this specific marker
+            // Create the content for this specific marker, including a div for the chart
             const contentString = `
                 <div>
                     <h3>${station.name || station.address}</h3>
@@ -98,6 +98,7 @@ function addMarkers(stations) {
                     <p><strong>Bike Stands:</strong> ${station.bike_stands || "N/A"}</p>
                     <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
                     <p><strong>Last Updated:</strong> ${formattedUpdate}</p>
+                    <div id="chart_div${station.number}" style="width: 300px; height: 200px;"></div>
                 </div>
             `;
 
@@ -110,8 +111,7 @@ function addMarkers(stations) {
 
                 // Add click event listener to open info window
                 currentMarker.addListener("click", () => {
-                    // Close any open info windows (optional)
-                    // Close the info window
+                    // Open the info window
                     infoWindow.open(map, currentMarker);
 
                     // Update sidebar with station information
@@ -120,11 +120,47 @@ function addMarkers(stations) {
                     // Open the sidebar if it's closed
                     document.getElementById("sidebar").style.width = "280px";
                     document.getElementById("map").style.marginRight = "280px";
+
+                    // Draw the chart after the info window is opened
+                    // This ensures the chart div exists in the DOM
+                    google.charts.load('current', {'packages':['corechart']});
+                    google.charts.setOnLoadCallback(function() {
+                        // Use actual station data instead of hardcoded values
+                        const chartData = new google.visualization.DataTable();
+                        chartData.addColumn('string', 'Type');
+                        chartData.addColumn('number', 'Count');
+                        chartData.addRows([
+                            ['Available Bikes', stationData.available_bikes || 0],
+                            ['Free Stands', stationData.available_bike_stands || 0],
+                        ]);
+
+                        // Chart Options
+                        const options = {
+                            title: 'Station Status',
+                            legend: {position: 'bottom'},
+                            width: 300,
+                            height: 200,
+                            colors: ['#4CAF50', '#e83f38'],
+                            series: {
+                                0: {color: '#4CAF50'}, // Green for Available Bikes
+                                1: {color: '#e83f38'}  // Red for Free Stands
+                            }
+
+                        };
+
+                        // Draw the chart
+                        const chart = new google.visualization.BarChart(
+                            document.getElementById(`chart_div${stationData.number}`)
+                        );
+                        chart.draw(chartData, options);
+                    });
                 });
             })(marker, contentString, station, formattedUpdate);
         }
     }
 }
+
+
 
 // New function to update the station sidebar with selected station info
 function updateStationSidebar(station, formattedUpdate) {
