@@ -55,8 +55,42 @@ function getStations() {
 // addMarkers Function connects to the JSON file of bike_stations to acquire data, display markers and map data to the releveant marker
 // Enhanced to update the sidebar when a station is clicked
 // Extra Javascript Console Log included for debugging.
+// Load Google Charts
+google.charts.load('current', {'packages':['corechart']});
+
+// This function draws the chart into the Info Window
+function drawTimeSeriesChart(dataArray, containerId) {
+    const data = new google.visualization.DataTable();
+    data.addColumn('string', 'Time');
+    data.addColumn('number', 'Available Bikes');
+
+    // Populate DataTable with your JSON data
+    dataArray.forEach(item => {
+        data.addRow([item.time, item.available_bikes]);
+    });
+
+    const options = {
+        title: 'Trend of Available Bikes from 09:00 to 21:00',
+        height: 200,
+        legend: { position: 'bottom' },
+        curveType: 'function',
+        colors: ['#4285F4'],
+        backgroundColor: { fill:'transparent' },
+        chartArea: {width: '80%', height: '70%'}
+    };
+
+    const chart = new google.visualization.LineChart(document.getElementById(containerId));
+    chart.draw(data, options);
+}
+
+// addMarkers Function connects to the JSON file of bike_stations to acquire data, display markers and map data to the releveant marker
+// Enhanced to update the sidebar when a station is clicked
+// Extra Javascript Console Log included for debugging.
 function addMarkers(stations) {
     console.log("Adding markers for", stations.length, "stations");
+
+    // Create a single infoWindow outside the loop to be reused
+    const infoWindow = new google.maps.InfoWindow();
 
     // For loop to iterate through each station on JSON
     for (const station of stations) {
@@ -96,103 +130,46 @@ function addMarkers(stations) {
                     <p><strong>Address:</strong> ${station.address || "N/A"}</p>
                     <p><strong>Bikes Available:</strong> ${station.available_bikes || "N/A"}</p>
                     <p><strong>Bike Stands:</strong> ${station.bike_stands || "N/A"}</p>
-                    <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands|| "N/A"}</p>
+                    <p><strong>Bikes Stands Available:</strong> ${station.available_bike_stands || "N/A"}</p>
                     <p><strong>Last Updated:</strong> ${formattedUpdate}</p>
-                    <div id="chart_div${station.number}" style="width: 300px; height: 200px;"></div>
-                </div>
-            `;
+                    <div id="chart_div_${station.number}" style="width: 300px; height: 200px;"></div>
+                </div>`;
 
-            // Create a closure to maintain a reference to the current marker and info window
-            (function(currentMarker, currentContent, stationData, update) {
-                // Create info window for this marker
-                const infoWindow = new google.maps.InfoWindow({
-                    content: currentContent
-                });
+            // Add click event listener to the marker with closure for contentString and station
+            marker.addListener("click", (function(contentString, stationNumber) {
+                return function() {
+                    // Set content for this specific marker
+                    infoWindow.setContent(contentString);
 
-                // Add click event listener to open info window
-                currentMarker.addListener("click", () => {
-                    // Open the info window
-                    infoWindow.open(map, currentMarker);
+                    // Open info window on this marker
+                    infoWindow.open(map, this);
 
-                    // Update sidebar with station information
-                    updateStationSidebar(stationData, update);
-
-                    // Open the sidebar if it's closed
-                    document.getElementById("sidebar").style.width = "280px";
-                    document.getElementById("map").style.marginRight = "280px";
-
-                    // Draw the chart after the info window is opened
-                    // This ensures the chart div exists in the DOM
-                    google.charts.load('current', {'packages':['corechart']});
-                    google.charts.setOnLoadCallback(function() {
-                        // Use actual station data instead of hardcoded values
-                        const chartData = new google.visualization.DataTable();
-                        chartData.addColumn('string', 'Type');
-                        chartData.addColumn('number', 'Count');
-                        chartData.addRows([
-                            ['Available Bikes', stationData.available_bikes || 0],
-                            ['Free Stands', stationData.available_bike_stands || 0],
-                        ]);
-
-                        // Chart Options
-                        const options = {
-                            title: 'Station Status',
-                            legend: {position: 'bottom'},
-                            width: 300,
-                            height: 200,
-                            colors: ['#4CAF50', '#e83f38'],
-                            series: {
-                                0: {color: '#4CAF50'}, // Green for Available Bikes
-                                1: {color: '#e83f38'}  // Red for Free Stands
-                            }
-
-                        };
-
-                        // Draw the chart
-                        const chart = new google.visualization.BarChart(
-                            document.getElementById(`chart_div${stationData.number}`)
-                        );
-                        chart.draw(chartData, options);
-                    });
-                });
-            })(marker, contentString, station, formattedUpdate);
+                    // Allow DOM to render before fetching data
+                    setTimeout(() => {
+                        // Fetch availability data and draw chart after the info window is opened
+                        console.log("Fetching availability data for station:", stationNumber);
+                        fetch('/availability?station=' + stationNumber)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok: ' + response.status);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log("Received availability data:", data);
+                                // The chart div should exist in the DOM now that the info window is open
+                                drawTimeSeriesChart(data, 'chart_div_' + stationNumber);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching availability:', error);
+                                const chartDiv = document.getElementById('chart_div_' + stationNumber);
+                                if (chartDiv) {
+                                    chartDiv.innerHTML = "<p>Failed to load chart data</p>";
+                                }
+                            });
+                    }, 300); // Giving the info window time to open and render
+                };
+            })(contentString, station.number));
         }
     }
 }
-
-
-
-// New function to update the station sidebar with selected station info
-function updateStationSidebar(station, formattedUpdate) {
-    console.log("Updating sidebar with station:", station);
-
-    // Update station name
-    document.getElementById("station-name").textContent = station.name || station.address;
-
-    // Update available bikes and docks
-    document.getElementById("bikes-available").textContent = station.available_bikes || "0";
-    document.getElementById("docks-available").textContent = station.available_bike_stands || "0";
-
-    // Update station details
-    document.getElementById("station-address").textContent = station.address || "No address available";
-
-    // Update status - assuming operational if we have data
-    const statusElement = document.getElementById("station-status");
-    if (station.status === "OPEN") {
-        statusElement.textContent = "Station Status: Operational";
-        statusElement.style.color = "#4CAF50"; // Green for operational
-    } else {
-        statusElement.textContent = "Station Status: Closed";
-        statusElement.style.color = "#F44336"; // Red for closed
-    }
-
-    // Update last updated time
-    document.getElementById("last-updated").textContent = `Last updated:${formattedUpdate}`;
-}
-
-// Uses server-injected weather_data from Flask (no fetch needed)
-document.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM fully loaded and parsed");
-});
-
-

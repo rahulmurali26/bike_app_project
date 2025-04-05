@@ -39,49 +39,9 @@ th functionality to search through
 <div class="sidebar" id="sidebar">
     <div class="sidebar-content">
         <button class="close-sidebar" id="close-sidebar">
-            <i class="fas fa-times"></i>
+            <i class="fas fa-times", ></i>
         </button>
 
-        <!-- Selected Station Info Section we can add to later-->
-        <div class="sidebar-section station-info" id="station-info">
-            <h2>Selected Station</h2>
-            <div class="station-header">
-                <div class="station-icon">
-                    <i class="fas fa-bicycle"></i>
-                </div>
-                <div class="station-name" id="station-name">No Station Selected</div>
-            </div>
-
-            <div class="station-stats">
-                <div class="stat-box">
-                    <div class="stat-value" id="bikes-available">0</div>
-                    <div class="stat-label">Bikes Available</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-value" id="docks-available">0</div>
-                    <div class="stat-label">Docks Available</div>
-                </div>
-            </div>
-
-            <div class="station-details">
-                <div class="detail-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span id="station-address">No address available</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-clock"></i>
-                    <span id="station-hours">24/7 Operation</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-info-circle"></i>
-                    <span id="station-status">Station Status: Operational</span>
-                </div>
-                <div class="detail-item">
-                    <i class="fas fa-history"></i>
-                    <span id="last-updated">Last updated: Just now</span>
-                </div>
-            </div>
-        </div>
 
         <!-- Weather Section - Now with dynamic data -->
         <div class="sidebar-section">
@@ -120,7 +80,7 @@ th functionality to search through
 
         <!-- Bike Availability Section  with random info graph we can change later-->
         <div class="sidebar-section">
-            <h2>Bike Availability</h2>
+            <h2>Bike Availability Trends Vs Temperature</h2>
             <!-- Thumbnail Image (click to enlarge) -->
             <div class="weather-graph">
                 <img id="weather-thumb" src="{{ url_for('static', filename='images/BikeData_vs_Weatherdata.png') }}"
