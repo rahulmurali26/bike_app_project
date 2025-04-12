@@ -1,11 +1,14 @@
-
 from flask import Flask, render_template, jsonify, request
 # External Scripts required to get API Request Data
 # Here we are opting for server side data fetching
-import jcddecaux
-import weatherscrap
+import static.jcddecaux as jcddecaux 
+import static.dbinfo as dbinfo
+import static.weatherscrap as weatherscrap
 import csv
 from datetime import datetime
+from Machine_Learning.prediction_flask import get_station_prediction
+import json
+import pandas as pd
 
 app = Flask(__name__)
 
@@ -147,7 +150,7 @@ def csv_debug():
                 station_samples = {}
 
                 for row in reader:
-                    station = row.get('station_number', '').strip()
+                    station = row.get('number', '').strip()
                     if station not in station_samples:
                         station_samples[station] = []
 
@@ -167,6 +170,47 @@ def csv_debug():
             "error": str(e),
             "traceback": traceback.format_exc()
         })
+    
+# Load station metadata for display (e.g. marker info)
+with open('Bikes_data.json') as f:  # Make sure this file exists and is correct
+    stations = json.load(f)
+
+
+@app.route('/average-availability')
+def average_availability():
+    # Load your 12-hour bike data CSV
+    df = pd.read_csv('12hr_bike_data.csv')
+
+    # Parse timestamp and extract hour
+    df['timestamp'] = pd.to_datetime(df['timestamp'], format="%m/%d/%Y %H:%M")
+    df['hour'] = df['timestamp'].dt.strftime('%H:00')
+
+    # Group by hour and calculate average
+    grouped = df.groupby('hour')['available_bikes'].mean().reset_index()
+    grouped.columns = ['Hour', 'Average Bikes Available']
+
+    # Convert to list of dicts for JSON response
+    return jsonify(grouped.to_dict(orient='records'))
+
+@app.route('/')
+def index():
+    return render_template('index.html', title='UCD Bikes', weather_data={})  # add weather if needed
+
+@app.route('/stations')
+def get_stations():
+    return jsonify(stations)
+
+@app.route('/predict/<int:station_number>')
+def predict(station_number):
+    print(f"Received prediction request for station {station_number}")
+    predictions = get_station_prediction(station_number)
+    
+    if predictions is None:
+        print(f"No data found for station {station_number}")
+        return jsonify({'error': 'Station not found'}), 404
+
+    print(f"Prediction data returned for station {station_number}")
+    return jsonify({'predictions': predictions})
 
 if __name__ == '__main__':
     app.run(debug=True)

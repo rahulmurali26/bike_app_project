@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }}</title>
     <!-- CSS Style sheet external -->
-    <link rel="stylesheet" href="../static/css/style2.css">
+    <link rel="stylesheet" href="../static/css/style.css">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <!-- Google Charts for visualisations -->
@@ -22,12 +22,10 @@
 <div id="station-list"></div>
 <canvas id="bikesChart"></canvas>
 
-
-
 <div class="search-container">
     <input type="text" id="search-bar" placeholder="Search for bike stations...">
-    <button id="search-button" onclick="searchStation()">Search</button>
 </div>
+
 
 
 <!-- Sidebar Toggle Button -->
@@ -80,12 +78,9 @@
 
         <!-- Bike Availability Section  with random info graph we can change later-->
         <div class="sidebar-section">
-            <h2>Bike Availability Trends Vs Temperature</h2>
-            <!-- Thumbnail Image (click to enlarge) -->
-            <div class="weather-graph">
-                <img id="weather-thumb" src="{{ url_for('static', filename='images/BikeData_vs_Weatherdata.png') }}"
-                     alt="Bike vs Weather Graph"
-                     style="width: 100%; margin-top: 10px; border-radius: 8px; cursor: pointer;">
+            <h2>Average Bikes per Hour in Dublin</h2>
+            <div class="bike-graph">
+                <div id="averageChart" style="width: 100%; height: 300px;"></div>
             </div>
         </div>
     </div>
@@ -175,6 +170,133 @@
     });
 </script>
 
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawAverageAvailabilityChart);
+    function drawAverageAvailabilityChart() {
+    console.log("Fetching average availability data...");
+
+    fetch('/average-availability')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Received average hourly data:", data);
+
+            const formattedData = data.map(entry => ({
+                time: entry.Hour,
+                available_bikes: entry['Average Bikes Available']
+            }));
+
+            const dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('string', 'Hour');
+            dataTable.addColumn('number', 'Avg Bikes Available');
+
+            formattedData.forEach(item => {
+                dataTable.addRow([item.time, item.available_bikes]);
+            });
+
+            const options = {
+                title: 'Average Bike Availability by Hour',
+                height: 300,
+                legend: { position: 'none' },
+                colors: ['#29acf2'],
+                backgroundColor: 'transparent',
+                hAxis: { title: 'Hour' },
+                vAxis: { title: 'Avg Bikes' },
+                chartArea: { width: '85%', height: '70%' }
+            };
+
+            const chart = new google.visualization.ColumnChart(document.getElementById('averageChart'));
+            chart.draw(dataTable, options);
+        })
+        .catch(error => {
+            console.error('Error fetching average availability:', error);
+            const chartDiv = document.getElementById('averageChart');
+            if (chartDiv) {
+                chartDiv.innerHTML = "<p style='color:#999; font-size:12px; text-align:center;'>Failed to load average chart</p>";
+            }
+        });
+    }   
+    function drawPredictionChart(stationId) {
+        fetch(`/predict/${stationId}`)
+            .then(response => response.json())
+            .then(data => {
+                const rawData = [['Time', 'Predicted Bikes']];
+                data.predictions.forEach(p => rawData.push([p[0], p[1]]));
+
+                const dataTable = google.visualization.arrayToDataTable(rawData);
+
+                const options = {
+                    title: `Predicted Bike Availability for Station ${stationId}`,
+                    curveType: 'function',
+                    legend: { position: 'bottom' },
+                    vAxis: { title: 'Bikes Available' },
+                    hAxis: { title: 'Time' }
+                };
+
+                const chart = new google.visualization.LineChart(document.getElementById('bikesChart'));
+                chart.draw(dataTable, options);
+            })
+            .catch(error => {
+                console.error("Prediction error:", error);
+                alert("Prediction failed. Please try again.");
+            });
+        
+    }
+</script>
+
+<!-- Script for search bar funcitonality -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let stationData = [];
+    
+      // Fetch the list of stations from the /stations endpoint
+      fetch("/stations")
+        .then(response => response.json())
+        .then(data => {
+          stationData = data;
+          renderStations(stationData);
+        })
+        .catch(error => console.error("Error fetching station data:", error));
+    
+      // Function to render the station list
+      function renderStations(stations) {
+        const stationList = document.getElementById("station-list");
+        stationList.innerHTML = ""; // Clear existing content
+    
+        if (stations.length === 0) {
+          stationList.innerHTML = "<p>No stations found.</p>";
+          return;
+        }
+    
+        // Create a new element for each station (displaying only the station name)
+        stations.forEach(station => {
+          const stationDiv = document.createElement("div");
+          stationDiv.className = "station";
+          // We assume the JSON data includes a 'name' property for each station
+          stationDiv.textContent = station.name;
+          stationList.appendChild(stationDiv);
+        });
+      }
+    
+      // Add an event listener for the search bar input
+      const searchInput = document.getElementById("search-bar");
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+    
+        // Filter stationData based on whether the station's name includes the query
+        const filteredStations = stationData.filter(station =>
+          station.name && station.name.toLowerCase().includes(query)
+        );
+    
+        renderStations(filteredStations);
+      });
+    });
+    </script>
 
 <!-- Your external JavaScript Files -->
 <script src="../static/js/weather.js"></script>
@@ -182,7 +304,6 @@
 
 <!-- Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
-
 
 </body>
 </html>

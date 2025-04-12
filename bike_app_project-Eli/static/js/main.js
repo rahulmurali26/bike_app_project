@@ -71,6 +71,35 @@ function getStations() {
 // Load Google Charts
 google.charts.load('current', {'packages':['corechart']});
 
+function drawAverageAvailabilityChart() {
+    console.log("Fetching average availability data...");
+
+    fetch('/average-availability')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Received average hourly data:", data);
+
+            const formattedData = data.map(entry => ({
+                time: entry.Hour,
+                available_bikes: entry['Average Bikes Available']
+            }));
+
+            drawTimeSeriesChart(formattedData, 'averageChart');
+        })
+        .catch(error => {
+            console.error('Error fetching average availability:', error);
+            const chartDiv = document.getElementById('averageChart');
+            if (chartDiv) {
+                chartDiv.innerHTML = "<p style='color:#999; font-size:12px; text-align:center;'>Failed to load average chart</p>";
+            }
+        });
+}
+
 // This function draws the chart into the Info Window
 function drawTimeSeriesChart(dataArray, containerId) {
     const data = new google.visualization.DataTable();
@@ -189,26 +218,31 @@ function addMarkers(stations) {
 
             // Create info window content
             const contentString = `
-                <div style="padding: 8px; max-width: 450px; font-family: Arial, sans-serif;">
-                    <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${station.name || station.address}</h3>
-                    <div style="display: flex; margin-bottom: 12px;">
-                        <div style="flex: 1; text-align: center; padding: 8px; background: #f0f8ff; border-radius: 4px; margin-right: 4px;">
-                            <div style="font-size: 20px; font-weight: bold; color: #29acf2;">${station.available_bikes}</div>
-                            <div style="font-size: 12px; color: #666;">Bikes</div>
-                        </div>
-                        <div style="flex: 1; text-align: center; padding: 8px; background: #f0f8ff; border-radius: 4px;">
-                            <div style="font-size: 20px; font-weight: bold; color: #29acf2;">${station.available_bike_stands}</div>
-                            <div style="font-size: 12px; color: #666;">Stands</div>
-                        </div>
+            <div style="padding: 8px; max-width: 450px; font-family: Arial, sans-serif;">
+                <h3 style="margin: 0 0 8px 0; font-size: 16px; color: #333;">${station.name || station.address}</h3>
+                <div style="display: flex; margin-bottom: 12px;">
+                    <div style="flex: 1; text-align: center; padding: 8px; background: #f0f8ff; border-radius: 4px; margin-right: 4px;">
+                        <div style="font-size: 20px; font-weight: bold; color: #29acf2;">${station.available_bikes}</div>
+                        <div style="font-size: 12px; color: #666;">Bikes</div>
                     </div>
-                    <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
-                        <strong>Address:</strong> ${station.address || "N/A"}
-                    </p>
-                    <p style="font-size: 11px; color: #999; margin-bottom: 12px;">
-                        Last updated: ${formattedUpdate}
-                    </p>
-                    <div id="chart_div_${station.number}" style="width: 100%; height: 162px;"></div>
-                </div>`;
+                    <div style="flex: 1; text-align: center; padding: 8px; background: #f0f8ff; border-radius: 4px;">
+                        <div style="font-size: 20px; font-weight: bold; color: #29acf2;">${station.available_bike_stands}</div>
+                        <div style="font-size: 12px; color: #666;">Stands</div>
+                    </div>
+                </div>
+                <p style="font-size: 12px; color: #666; margin-bottom: 8px;">
+                    <strong>Address:</strong> ${station.address || "N/A"}
+                </p>
+                <p style="font-size: 11px; color: #999; margin-bottom: 12px;">
+                    Last updated: ${formattedUpdate}
+                </p>
+        
+                <h4 style="font-size: 13px; margin-bottom: 4px; color: #444;">Predicted Availability (Today)</h4>
+                <div id="chart_div_${station.number}" style="width: 100%; height: 162px; margin-bottom: 50px;"></div>
+        
+                <h4 style="font-size: 13px; margin-bottom: 4px; color: #444;">Historical Availability (Past Week)</h4>
+                <div id="availability_chart_div_${station.number}" style="width: 100%; height: 162px;"></div>
+            </div>`;
 
             // Add click event listener to the marker with closure for contentString and station
             marker.addListener("click", (function(contentString, stationNumber) {
@@ -219,6 +253,33 @@ function addMarkers(stations) {
                     // Open info window on this marker
                     infoWindow.open(map, this);
 
+                    setTimeout(() => {
+                        console.log("Fetching prediction data for station:", stationNumber);
+                    
+                        fetch('/predict/' + stationNumber)
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok: ' + response.status);
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                console.log("Received prediction data:", data);
+                                const formattedData = data.predictions.map(p => ({
+                                    time: p[0],
+                                    available_bikes: p[1]
+                                }));
+                                drawTimeSeriesChart(formattedData, 'chart_div_' + stationNumber);
+                            })
+                            .catch(error => {
+                                console.error('Error fetching prediction:', error);
+                                const chartDiv = document.getElementById('chart_div_' + stationNumber);
+                                if (chartDiv) {
+                                    chartDiv.innerHTML = "<p style='color:#666; font-size:12px; text-align:center;'>Failed to load prediction</p>";
+                                }
+                            });
+                    }, 300);
+                    
                     // Allow DOM to render before fetching data
                     setTimeout(() => {
                         // Fetch availability data and draw chart after the info window is opened
@@ -233,17 +294,18 @@ function addMarkers(stations) {
                             .then(data => {
                                 console.log("Received availability data:", data);
                                 // The chart div should exist in the DOM now that the info window is open
-                                drawTimeSeriesChart(data, 'chart_div_' + stationNumber);
+                                drawTimeSeriesChart(data, 'availability_chart_div_' + stationNumber);
                             })
                             .catch(error => {
                                 console.error('Error fetching availability:', error);
                                 const chartDiv = document.getElementById('chart_div_' + stationNumber);
                                 if (chartDiv) {
-                                    chartDiv.innerHTML = "<p style='color:#666; font-size:12px; text-align:center;'>Failed to load chart data</p>";
+                                    chartDiv.innerHTML = "<p>Failed to load chart data</p>";
                                 }
                             });
                     }, 300); // Giving the info window time to open and render
                 };
+
             })(contentString, station.number));
             
             // Add hover effect to make the marker larger when moused over
@@ -261,6 +323,7 @@ function addMarkers(stations) {
     }
 }
 
+
 // This function draws the chart into the Info Window
 function drawTimeSeriesChart(dataArray, containerId) {
     const data = new google.visualization.DataTable();
@@ -273,7 +336,7 @@ function drawTimeSeriesChart(dataArray, containerId) {
     });
 
     const options = {
-        title: 'Trend of Available Bikes from 09:00 to 21:00',
+        title: 'Trend of Available Bikes from 09:00 to 22:00',
         height: 200, 
         legend: { position: 'bottom' },
         curveType: 'function',
