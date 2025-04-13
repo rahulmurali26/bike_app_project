@@ -18,7 +18,7 @@ def get_weather_forecast(city, date_str):
     """
     params = {
         "q": city,
-        "appid": "72e7bbdfdba07b96a4290bf1506742af",
+        "appid": "OPEN_WEATHER_API_KEY",
         "units": "metric"
     }
 
