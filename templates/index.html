@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }}</title>
+    <!-- CSS Style sheet external -->
+    <link rel="stylesheet" href="../static/css/style.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Charts for visualisations -->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+</head>
+
+<body>
+<!-- Header Container (contains Logo and Weather Information (connected to Openweather API) -->
+<div class="header">
+    <h1> UCD Bikes App </h1>
+</div>
+<!-- Map Container -->
+<div id="map"></div>
+<div id="station-list"></div>
+<canvas id="bikesChart"></canvas>
+
+<div class="search-container">
+    <input type="text" id="search-bar" placeholder="Search for bike stations...">
+</div>
+
+
+
+<!-- Sidebar Toggle Button -->
+<button class="toggle-sidebar" id="toggle-sidebar">
+    <i class="fas fa-bars"></i>
+</button>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-content">
+        <button class="close-sidebar" id="close-sidebar">
+            <i class="fas fa-times", ></i>
+        </button>
+
+
+        <!-- Weather Section - Now with dynamic data -->
+        <div class="sidebar-section">
+            <h2>Current Weather</h2>
+            <div class="weather-container">
+                <div class="weather-header">
+                    <div class="weather-temp" id="weather-temp">--°</div>
+                    <div class="weather-icon" id="weather-icon">
+                        <!-- Weather icon will be inserted here dynamically -->
+                    </div>
+                </div>
+                <div class="weather-details">
+                    <div class="weather-detail">
+                        <i class="fas fa-wind"></i>
+                        <span id="weather-wind">-- km/h</span>
+                    </div>
+                    <div class="weather-detail">
+                        <i class="fas fa-tint"></i>
+                        <span id="weather-humidity">--%</span>
+                    </div>
+                    <div class="weather-detail">
+                        <i class="fas fa-temperature-low"></i>
+                        <span id="weather-temp-range">--° / --°</span>
+                    </div>
+                    <div class="weather-detail">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span id="weather-location">--</span>
+                    </div>
+                    <div class="weather-detail">
+                        <i class="fas fa-history"></i>
+                        <span id="weather-last-update">--</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bike Availability Section  with random info graph we can change later-->
+        <div class="sidebar-section">
+            <h2>Average Bikes per Hour in Dublin</h2>
+            <div class="bike-graph">
+                <div id="averageChart" style="width: 100%; height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for enlarged image -->
+<div id="imageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <img id="modalImage" src="" alt="Enlarged image">
+    </div>
+</div>
+
+<!-- Script to make the weather data available to JavaScript -->
+<script>
+    // This converts the Python weather_data object to a JavaScript object using Jinja's tojson filter
+    // The |safe filter prevents Jinja from escaping the JSON
+    const weatherData = {{ weather_data|tojson|safe }};
+    console.log("Weather data loaded:", weatherData);
+</script>
+
+<!-- This is the script for the sidebar, controlling opening and closing -->
+<script>
+    console.log("Setting up sidebar event listeners");
+    document.addEventListener("DOMContentLoaded", () => {
+        // Set up sidebar toggle listeners
+        const toggleBtn = document.getElementById("toggle-sidebar");
+        const closeBtn = document.getElementById("close-sidebar");
+
+        console.log("Toggle button found:", toggleBtn);
+        console.log("Close button found:", closeBtn);
+
+        toggleBtn.addEventListener("click", () => {
+            console.log("Toggle button clicked!");
+            document.getElementById("sidebar").style.width = "280px";
+            document.getElementById("map").style.marginRight = "280px";
+        });
+
+        closeBtn.addEventListener("click", () => {
+            console.log("Close button clicked!");
+            document.getElementById("sidebar").style.width = "0";
+            document.getElementById("map").style.marginRight = "0";
+        });
+
+        // Update weather information in the sidebar
+        if (weatherData) {
+            updateWeatherUI(weatherData);
+        } else {
+            console.error("Weather data not available");
+        }
+    });
+</script>
+
+<!-- To handle enlargement of the bikesgraph -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get the modal elements
+        const modal = document.getElementById('imageModal');
+        const modalImg = document.getElementById('modalImage');
+        const closeModal = document.getElementsByClassName('close-modal')[0];
+        const weatherThumb = document.getElementById('weather-thumb');
+
+        // When the user clicks on the thumbnail, open the modal
+        weatherThumb.onclick = function() {
+            modal.style.display = "block";
+            modalImg.src = this.src;
+        }
+
+        // When the user clicks on the X, close the modal
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        // Also close when clicking anywhere on the modal background
+        modal.onclick = function(event) {
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape' && modal.style.display === "block") {
+                modal.style.display = "none";
+            }
+        });
+    });
+</script>
+
+<script type="text/javascript">
+    google.charts.load('current', {'packages':['corechart']});
+    google.charts.setOnLoadCallback(drawAverageAvailabilityChart);
+    function drawAverageAvailabilityChart() {
+    console.log("Fetching average availability data...");
+
+    fetch('/average-availability')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok: ' + response.status);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Received average hourly data:", data);
+
+            const formattedData = data.map(entry => ({
+                time: entry.Hour,
+                available_bikes: entry['Average Bikes Available']
+            }));
+
+            const dataTable = new google.visualization.DataTable();
+            dataTable.addColumn('string', 'Hour');
+            dataTable.addColumn('number', 'Avg Bikes Available');
+
+            formattedData.forEach(item => {
+                dataTable.addRow([item.time, item.available_bikes]);
+            });
+
+            const options = {
+                title: 'Average Bike Availability by Hour',
+                height: 300,
+                legend: { position: 'none' },
+                colors: ['#29acf2'],
+                backgroundColor: 'transparent',
+                hAxis: { title: 'Hour' },
+                vAxis: { title: 'Avg Bikes' },
+                chartArea: { width: '85%', height: '70%' }
+            };
+
+            const chart = new google.visualization.ColumnChart(document.getElementById('averageChart'));
+            chart.draw(dataTable, options);
+        })
+        .catch(error => {
+            console.error('Error fetching average availability:', error);
+            const chartDiv = document.getElementById('averageChart');
+            if (chartDiv) {
+                chartDiv.innerHTML = "<p style='color:#999; font-size:12px; text-align:center;'>Failed to load average chart</p>";
+            }
+        });
+    }   
+    function drawPredictionChart(stationId) {
+        fetch(`/predict/${stationId}`)
+            .then(response => response.json())
+            .then(data => {
+                const rawData = [['Time', 'Predicted Bikes']];
+                data.predictions.forEach(p => rawData.push([p[0], p[1]]));
+
+                const dataTable = google.visualization.arrayToDataTable(rawData);
+
+                const options = {
+                    title: `Predicted Bike Availability for Station ${stationId}`,
+                    curveType: 'function',
+                    legend: { position: 'bottom' },
+                    vAxis: { title: 'Bikes Available' },
+                    hAxis: { title: 'Time' }
+                };
+
+                const chart = new google.visualization.LineChart(document.getElementById('bikesChart'));
+                chart.draw(dataTable, options);
+            })
+            .catch(error => {
+                console.error("Prediction error:", error);
+                alert("Prediction failed. Please try again.");
+            });
+        
+    }
+</script>
+
+<!-- Script for search bar funcitonality -->
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+      let stationData = [];
+    
+      // Fetch the list of stations from the /stations endpoint
+      fetch("/stations")
+        .then(response => response.json())
+        .then(data => {
+          stationData = data;
+          renderStations(stationData);
+        })
+        .catch(error => console.error("Error fetching station data:", error));
+    
+      // Function to render the station list
+      function renderStations(stations) {
+        const stationList = document.getElementById("station-list");
+        stationList.innerHTML = ""; // Clear existing content
+    
+        if (stations.length === 0) {
+          stationList.innerHTML = "<p>No stations found.</p>";
+          return;
+        }
+    
+        // Create a new element for each station (displaying only the station name)
+        stations.forEach(station => {
+          const stationDiv = document.createElement("div");
+          stationDiv.className = "station";
+          // We assume the JSON data includes a 'name' property for each station
+          stationDiv.textContent = station.name;
+          stationList.appendChild(stationDiv);
+        });
+      }
+    
+      // Add an event listener for the search bar input
+      const searchInput = document.getElementById("search-bar");
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase();
+    
+        // Filter stationData based on whether the station's name includes the query
+        const filteredStations = stationData.filter(station =>
+          station.name && station.name.toLowerCase().includes(query)
+        );
+    
+        renderStations(filteredStations);
+      });
+    });
+    </script>
+
+<!-- Your external JavaScript Files -->
+<script src="../static/js/weather.js"></script>
+<script src="../static/js/main.js"></script>
+
+<!-- Google Maps API -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBOC_l8DI0Lc3pe8cqPqcNLufkHpqpDEVI&libraries=drawing&callback=initMap" async defer></script>
+
+</body>
+</html>
