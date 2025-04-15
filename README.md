@@ -2,7 +2,7 @@
 
 ## 📍 Overview
 
-This is an interactive web application designed to visualize real-time Dublin Bikes availability and weather data. The application fetches live bike station data from JCDecaux and current weather conditions from OpenWeatherMap, and displays this data on a dynamic Google Map with custom-styled markers and side-panel visualizations.
+This is an interactive web application designed to visualize real-time Dublin Bikes availability and weather data. The application fetches live bike station data from JCDecaux and current weather conditions from OpenWeatherMap, and displays this data on a dynamic Google Map with custom-styled markers and side-panel visualizations. The final updated code we will use is under bike-app-project_Eli, we can upload that to the main branch after. For this to run we need the "final_merged_data.csv" file
 
 ---
 
